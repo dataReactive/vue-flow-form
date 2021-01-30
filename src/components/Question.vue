@@ -71,6 +71,7 @@
           v-bind:aria-label="language.ariaOk"
         >
             <span v-if="question.type === QuestionType.SectionBreak">{{ language.continue }}</span>
+            <span v-else-if="showSkip()">{{ language.skip }}</span>
             <span v-else>{{ language.ok }}</span>
         </button>
         <a 
@@ -128,7 +129,7 @@
     props: {
       question: QuestionModel,
       language: LanguageModel,
-      value: [String, Array, Boolean, Number],
+      value: [String, Array, Boolean, Number, Object],
       active: {
         type: Boolean,
         default: false
@@ -245,6 +246,10 @@
           return this.active
         }
 
+        if (!this.question.required) {
+          return true
+        }
+
         if (this.question.allowOther && this.question.other) {
           return true
         }
@@ -260,6 +265,14 @@
         }
 
         return q.hasValue && q.isValid()
+      },
+
+      showSkip() {
+        const q = this.$refs.questionComponent
+
+        // We might not have a reference to the question component at first
+        // but we know that if we don't, it's definitely empty
+        return !this.question.required && (!q || !q.hasValue)
       },
 
       /**
